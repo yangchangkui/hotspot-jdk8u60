@@ -360,8 +360,8 @@ class CMSStats VALUE_OBJ_CLASS_SPEC {
   double _cms_period;
   size_t _cms_allocated;        // bytes of direct allocation per gc0 period
 
-  // Timers.
-  elapsedTimer _cms_timer;
+  // Timers. 经时计时器
+  elapsedTimer _cms_timer; 
   TimeStamp    _gc0_begin_time;
   TimeStamp    _cms_begin_time;
   TimeStamp    _cms_end_time;
@@ -682,15 +682,15 @@ class CMSCollector: public CHeapObj<mtGC> {
   //                                            precleaning || abortablePrecleanb
  public:
   enum CollectorState {
-    Resizing            = 0,
-    Resetting           = 1,
-    Idling              = 2,
-    InitialMarking      = 3,
-    Marking             = 4,
-    Precleaning         = 5,
-    AbortablePreclean   = 6,
-    FinalMarking        = 7,
-    Sweeping            = 8
+    Resizing            = 0, //重新
+    Resetting           = 1, //重置：重置CMS收集器的数据结构，等待下一次垃圾回收
+    Idling              = 2, //空闲
+    InitialMarking      = 3, //初始标记
+    Marking             = 4, //标记
+    Precleaning         = 5, //预清理
+    AbortablePreclean   = 6, //中止预清理
+    FinalMarking        = 7, //最终标记
+    Sweeping            = 8  //清除
   };
  protected:
   static CollectorState _collectorState;

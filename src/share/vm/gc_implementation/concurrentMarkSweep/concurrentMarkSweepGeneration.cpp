@@ -2355,12 +2355,15 @@ void CMSCollector::collect_in_background(bool clear_all_soft_refs, GCCause::Caus
 
     assert(_foregroundGCShouldWait, "Foreground collector, if active, "
       "should be waiting");
-
+    //判断状态，选择对应的处理方式
     switch (_collectorState) {
       case InitialMarking:
         {
+          // 释放前台GC
           ReleaseForegroundGC x(this);
+          // 记录CMS开始
           stats().record_cms_begin();
+          // 初始标记
           VM_CMS_Initial_Mark initial_mark_op(this);
           VMThread::execute(&initial_mark_op);
         }

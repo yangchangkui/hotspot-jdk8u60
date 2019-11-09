@@ -172,6 +172,7 @@ void MutableSpace::set_top_for_allocations() {
 #endif
 
 // This version requires locking. */
+// 自己拥有锁，到达安全点，是VM线程
 HeapWord* MutableSpace::allocate(size_t size) {
   assert(Heap_lock->owned_by_self() ||
          (SafepointSynchronize::is_at_safepoint() &&
@@ -190,11 +191,13 @@ HeapWord* MutableSpace::allocate(size_t size) {
 }
 
 // This version is lock-free.
+// 无锁分配内存，进行CAS操作
 HeapWord* MutableSpace::cas_allocate(size_t size) {
   do {
     HeapWord* obj = top();
     if (pointer_delta(end(), obj) >= size) {
       HeapWord* new_top = obj + size;
+      // 使用CAS操作
       HeapWord* result = (HeapWord*)Atomic::cmpxchg_ptr(new_top, top_addr(), obj);
       // result can be one of two:
       //  the old top value: the exchange succeeded

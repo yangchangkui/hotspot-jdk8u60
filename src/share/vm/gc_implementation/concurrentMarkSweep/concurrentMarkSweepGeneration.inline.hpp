@@ -343,16 +343,23 @@ inline void CMSStats::record_gc0_end(size_t cms_gen_bytes_used) {
 }
 
 inline void CMSStats::record_cms_begin() {
+  // 停下计时器
   _cms_timer.stop();
 
   // This is just an approximate value, but is good enough.
+  // 这是一个近似值，但是已经足够了
   _cms_used_at_cms_begin = _cms_used_at_gc0_end;
-
+  
+  // period（周期）
   _cms_period = AdaptiveWeightedAverage::exp_avg((float)_cms_period,
     (float) _cms_timer.seconds(), _cms_alpha);
+
+  // 更新cms开始时间
   _cms_begin_time.update();
 
+  // 计时器重置
   _cms_timer.reset();
+  // 计时器启动
   _cms_timer.start();
 }
 

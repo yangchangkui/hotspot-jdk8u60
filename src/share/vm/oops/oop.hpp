@@ -59,6 +59,7 @@ class ParCompactionManager;
 class oopDesc {
   friend class VMStructs;
  private:
+  // 标记对象 markOopDesc
   volatile markOop  _mark;
   union _metadata {
     Klass*      _klass;

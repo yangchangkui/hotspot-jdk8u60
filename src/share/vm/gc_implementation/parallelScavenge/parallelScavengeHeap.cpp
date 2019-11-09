@@ -257,12 +257,15 @@ HeapWord* ParallelScavengeHeap::mem_allocate(
   // limit is being exceeded as checked below.
   *gc_overhead_limit_was_exceeded = false;
 
+  // 新生代内存分配(判断当前剩余空闲内存是否足够放下申请的对象，如果可以，那么成功返回)
   HeapWord* result = young_gen()->allocate(size);
 
   uint loop_count = 0;
   uint gc_count = 0;
   uint gclocker_stalled_count = 0;
 
+  // 若CAS分配成功，则直接返回
+  // 若失败，则加锁分配
   while (result == NULL) {
     // We don't want to have multiple collections for a single filled generation.
     // To prevent this, each thread tracks the total_collections() value, and if
@@ -276,20 +279,26 @@ HeapWord* ParallelScavengeHeap::mem_allocate(
     // The policy MUST attempt allocations during the same period it reads the
     // total_collections() value!
     {
+      //开启堆互斥锁
       MutexLocker ml(Heap_lock);
+
+      // 统计堆gc次数
       gc_count = Universe::heap()->total_collections();
 
+      // 分配新生代
       result = young_gen()->allocate(size);
       if (result != NULL) {
         return result;
       }
 
       // If certain conditions hold, try allocating from the old gen.
+      // 若新生代分配失败，当分配对象大于eden区的半 或 eden正在进行GC 则加锁分配到老年代
       result = mem_allocate_old_gen(size);
       if (result != NULL) {
         return result;
       }
 
+      // gc
       if (gclocker_stalled_count > GCLockerRetryAllocationCount) {
         return NULL;
       }

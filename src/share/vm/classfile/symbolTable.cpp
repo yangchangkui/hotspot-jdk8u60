@@ -644,6 +644,7 @@ unsigned int StringTable::hash_string(const jchar* s, int len) {
                                     java_lang_String::hash_code(s, len);
 }
 
+// 
 oop StringTable::lookup(int index, jchar* name,
                         int len, unsigned int hash) {
   int count = 0;
@@ -728,15 +729,22 @@ oop StringTable::lookup(jchar* name, int len) {
 }
 
 
+// 字符串入池操作
 oop StringTable::intern(Handle string_or_null, jchar* name,
                         int len, TRAPS) {
+  // 计算hash值
   unsigned int hashValue = hash_string(name, len);
+  // 获取索引
   int index = the_table()->hash_to_index(hashValue);
+  // 看下表中是否有对应的值，有就返回
   oop found_string = the_table()->lookup(index, name, len, hashValue);
 
-  // Found
+  // Found 
+  // 对应的字符串已经存在表中
   if (found_string != NULL) {
-    ensure_string_alive(found_string);
+    // 明确告诉GC字符串存活，
+    ensure_string_alive(found_string); 
+    // 返回找到的字符串
     return found_string;
   }
 
@@ -757,12 +765,14 @@ oop StringTable::intern(Handle string_or_null, jchar* name,
     // Deduplicate the string before it is interned. Note that we should never
     // deduplicate a string after it has been interned. Doing so will counteract
     // compiler optimizations done on e.g. interned string literals.
+    // 删除重复数据
     G1StringDedup::deduplicate(string());
   }
 #endif
 
   // Grab the StringTable_lock before getting the_table() because it could
   // change at safepoint.
+  // 锁住表，并往里面新增数据
   oop added_or_found;
   {
     MutexLocker ml(StringTable_lock, THREAD);
@@ -786,7 +796,7 @@ oop StringTable::intern(Symbol* symbol, TRAPS) {
   return result;
 }
 
-
+// 字符入池操作
 oop StringTable::intern(oop string, TRAPS)
 {
   if (string == NULL) return NULL;

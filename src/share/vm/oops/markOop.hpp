@@ -103,7 +103,7 @@ class JavaThread;
 
 class markOopDesc: public oopDesc {
  private:
-  // Conversion
+  // Conversion (转换)
   uintptr_t value() const { return (uintptr_t) this; }
 
  public:
