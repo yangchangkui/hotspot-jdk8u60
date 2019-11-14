@@ -38,15 +38,25 @@ class GCCause : public AllStatic {
  public:
   enum Cause {
     /* public */
+    // System.gc()
     _java_lang_system_gc,
+    // full_gc
     _full_gc_alot,
+    // 清理
     _scavenge_alot,
+    // 分配profiler
     _allocation_profiler,
+    // JVMTI强制GC
     _jvmti_force_gc,
+    // gc锁
     _gc_locker,
+    // 堆检查
     _heap_inspection,
+    // 堆 数据转储
     _heap_dump,
+    // 
     _wb_young_gc,
+    // 
     _update_allocation_context_stats_inc,
     _update_allocation_context_stats_full,
 
@@ -56,7 +66,6 @@ class GCCause : public AllStatic {
     _allocation_failure,
 
     /* implementation specific */
-
     _tenured_generation_full,
     _metadata_GC_threshold,
 

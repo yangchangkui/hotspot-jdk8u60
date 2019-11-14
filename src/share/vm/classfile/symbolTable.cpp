@@ -747,7 +747,6 @@ oop StringTable::intern(Handle string_or_null, jchar* name,
     // 返回找到的字符串
     return found_string;
   }
-
   debug_only(StableMemoryChecker smc(name, len * sizeof(name[0])));
   assert(!Universe::heap()->is_in_reserved(name),
          "proposed name of symbol must be stable");
@@ -759,7 +758,6 @@ oop StringTable::intern(Handle string_or_null, jchar* name,
   } else {
     string = java_lang_String::create_from_unicode(name, len, CHECK_NULL);
   }
-
 #if INCLUDE_ALL_GCS
   if (G1StringDedup::is_enabled()) {
     // Deduplicate the string before it is interned. Note that we should never
@@ -769,7 +767,6 @@ oop StringTable::intern(Handle string_or_null, jchar* name,
     G1StringDedup::deduplicate(string());
   }
 #endif
-
   // Grab the StringTable_lock before getting the_table() because it could
   // change at safepoint.
   // 锁住表，并往里面新增数据
@@ -780,9 +777,7 @@ oop StringTable::intern(Handle string_or_null, jchar* name,
     added_or_found = the_table()->basic_add(index, string, name, len,
                                   hashValue, CHECK_NULL);
   }
-
   ensure_string_alive(added_or_found);
-
   return added_or_found;
 }
 

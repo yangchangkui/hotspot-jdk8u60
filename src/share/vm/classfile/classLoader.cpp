@@ -828,7 +828,7 @@ void ClassLoader::load_zip_library() {
 
   // Lookup canonicalize entry in libjava.dll
   void *javalib_handle = os::native_java_library();
-  CanonicalizeEntry = CAST_TO_FN_PTR(canonicalize_fn_t, os::dll_lookup(javalib_handle, "Canonicalize"));
+  CanonicalizeEntry = CAST_TO_FN_PTR(canonicalize_fn_t, os::dll_lookup(javalib_handle, "Canonicalize")); //规范化转换
   // This lookup only works on 1.3. Do not check for non-null here
 }
 

@@ -35,9 +35,13 @@ class SubTasksDone;
 // A "GenCollectedHeap" is a SharedHeap that uses generational
 // collection.  It is represented with a sequence of Generation's.
 class GenCollectedHeap : public SharedHeap {
+  // 收集策略
   friend class GenCollectorPolicy;
+  // GC堆内存
   friend class Generation;
-  friend class DefNewGeneration;
+  // 新生代
+  friend class DefNewGeneration; 
+  // 老年代
   friend class TenuredGeneration;
   friend class ConcurrentMarkSweepGeneration;
   friend class CMSCollector;

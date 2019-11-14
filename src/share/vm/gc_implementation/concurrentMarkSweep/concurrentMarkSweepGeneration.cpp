@@ -1677,6 +1677,12 @@ void ConcurrentMarkSweepGeneration::collect(bool   full,
   collector()->collect(full, clear_all_soft_refs, size, tlab);
 }
 
+// CMS垃圾收集方法
+/**
+ * @param full 是否full gc
+ * @param clear_all_soft_refs 是否清除软引用
+ * @param size 
+ */ 
 void CMSCollector::collect(bool   full,
                            bool   clear_all_soft_refs,
                            size_t size,
@@ -1685,6 +1691,7 @@ void CMSCollector::collect(bool   full,
   if (!UseCMSCollectionPassing && _collectorState > Idling) {
     // For debugging purposes skip the collection if the state
     // is not currently idle
+    // 是否打印CMS状态 TraceCMSState
     if (TraceCMSState) {
       gclog_or_tty->print_cr("Thread " INTPTR_FORMAT " skipped full:%d CMS state %d",
         Thread::current(), full, _collectorState);
@@ -2132,13 +2139,17 @@ void CMSCollector::do_compaction_work(bool clear_all_soft_refs) {
 // A work method used by the foreground collector to do
 // a mark-sweep, after taking over from a possibly on-going
 // concurrent mark-sweep collection.
+// 标记清除
 void CMSCollector::do_mark_sweep_work(bool clear_all_soft_refs,
   CollectorState first_state, bool should_start_over) {
+
   if (PrintGC && Verbose) {
     gclog_or_tty->print_cr("Pass concurrent collection to foreground "
       "collector with count %d",
       _full_gcs_since_conc_gc);
   }
+
+  // 转换状态（空闲-->初始标记 预清理-->最终标记）
   switch (_collectorState) {
     case Idling:
       if (first_state == Idling || should_start_over) {
@@ -2156,6 +2167,8 @@ void CMSCollector::do_mark_sweep_work(bool clear_all_soft_refs,
       // required.
       _collectorState = FinalMarking;
   }
+
+  // 后台执行垃圾收集
   collect_in_foreground(clear_all_soft_refs, GenCollectedHeap::heap()->gc_cause());
 
   // For a mark-sweep, compute_new_size() will be called
@@ -2249,16 +2262,26 @@ class ReleaseForegroundGC: public StackObj {
 // one "collect" method between the background collector and the foreground
 // collector but the if-then-else required made it cleaner to have
 // separate methods.
+// CMS后台收集GC方法
+// ConcurrentMarkSweepThread 线程默认2s一次后台执行
+/**
+ * @param clear_all_soft_refs 是否清除所有软引用
+ * @param cause 
+ */ 
 void CMSCollector::collect_in_background(bool clear_all_soft_refs, GCCause::Cause cause) {
+  // 收集垃圾的只能是ConcurrentGCThread线程
   assert(Thread::current()->is_ConcurrentGC_thread(),
     "A CMS asynchronous collection is only allowed on a CMS thread.");
 
+  // 分带收集堆
   GenCollectedHeap* gch = GenCollectedHeap::heap();
   {
     bool safepoint_check = Mutex::_no_safepoint_check_flag;
     MutexLockerEx hl(Heap_lock, safepoint_check);
     FreelistLocker fll(this);
     MutexLockerEx x(CGC_lock, safepoint_check);
+
+    // 后台有GC任务 或 没有使用异步并发标记清除GC
     if (_foregroundGCIsActive || !UseAsyncConcMarkSweepGC) {
       // The foreground collector is active or we're
       // not using asynchronous collections.  Skip this
@@ -2535,7 +2558,10 @@ void CMSCollector::report_heap_summary(GCWhen::Type when) {
   _gc_tracer_cm->report_metaspace_summary(when, _last_metaspace_summary);
 }
 
+// 主动垃圾收集
 void CMSCollector::collect_in_foreground(bool clear_all_soft_refs, GCCause::Cause cause) {
+
+  // 检验执行状态 和 校验线程
   assert(_foregroundGCIsActive && !_foregroundGCShouldWait,
          "Foreground collector should be waiting, not executing");
   assert(Thread::current()->is_VM_thread(), "A foreground collection"
@@ -2544,9 +2570,12 @@ void CMSCollector::collect_in_foreground(bool clear_all_soft_refs, GCCause::Caus
          "VM thread should have CMS token");
 
   // The gc id is created in register_foreground_gc_start if this collection is synchronous
+  // 为初始标记加gc_id
   const GCId gc_id = _collectorState == InitialMarking ? GCId::peek() : _gc_tracer_cm->gc_id();
   NOT_PRODUCT(GCTraceTime t("CMS:MS (foreground) ", PrintGCDetails && Verbose,
     true, NULL, gc_id);)
+
+  // 使用自适应大小策略
   if (UseAdaptiveSizePolicy) {
     size_policy()->ms_collection_begin();
   }
@@ -2554,43 +2583,58 @@ void CMSCollector::collect_in_foreground(bool clear_all_soft_refs, GCCause::Caus
 
   HandleMark hm;  // Discard invalid handles created during verification
 
+  // GC前验证
   if (VerifyBeforeGC &&
       GenCollectedHeap::heap()->total_collections() >= VerifyGCStartAt) {
     Universe::verify();
   }
 
   // Snapshot the soft reference policy to be used in this collection cycle.
+  // 设置收集策略，是否收集软引用
   ref_processor()->setup_policy(clear_all_soft_refs);
 
   // Decide if class unloading should be done
   update_should_unload_classes();
 
   bool init_mark_was_synchronous = false; // until proven otherwise
+
+
+  // 状态不是空闲就会一直进行下去
   while (_collectorState != Idling) {
+    // 打印状态
     if (TraceCMSState) {
       gclog_or_tty->print_cr("Thread " INTPTR_FORMAT " in CMS state %d",
         Thread::current(), _collectorState);
     }
+
+    // 真正的逻辑
     switch (_collectorState) {
+      // 初始标记
       case InitialMarking:
         register_foreground_gc_start(cause);
         init_mark_was_synchronous = true;  // fact to be exploited in re-mark
+        // 同步检查安全点
         checkpointRootsInitial(false);
         assert(_collectorState == Marking, "Collector state should have changed"
           " within checkpointRootsInitial()");
         break;
+
+      // 并发标记
       case Marking:
         // initial marking in checkpointRootsInitialWork has been completed
         if (VerifyDuringGC &&
             GenCollectedHeap::heap()->total_collections() >= VerifyGCStartAt) {
           Universe::verify("Verify before initial mark: ");
         }
+
         {
+          // 实际并发标记
           bool res = markFromRoots(false);
           assert(res && _collectorState == FinalMarking, "Collector state should "
             "have changed");
           break;
         }
+      // 最终标记  
       case FinalMarking:
         if (VerifyDuringGC &&
             GenCollectedHeap::heap()->total_collections() >= VerifyGCStartAt) {
@@ -2601,6 +2645,8 @@ void CMSCollector::collect_in_foreground(bool clear_all_soft_refs, GCCause::Caus
         assert(_collectorState == Sweeping, "Collector state should not "
           "have changed within checkpointRootsFinal()");
         break;
+
+      // 清除 
       case Sweeping:
         // final marking in checkpointRootsFinal has been completed
         if (VerifyDuringGC &&
@@ -2610,12 +2656,16 @@ void CMSCollector::collect_in_foreground(bool clear_all_soft_refs, GCCause::Caus
         sweep(false);
         assert(_collectorState == Resizing, "Incorrect state");
         break;
+
+      // 重置空间 
       case Resizing: {
         // Sweeping has been completed; the actual resize in this case
         // is done separately; nothing to be done in this state.
         _collectorState = Resetting;
         break;
       }
+
+      // 
       case Resetting:
         // The heap has been resized.
         if (VerifyDuringGC &&
@@ -2627,7 +2677,11 @@ void CMSCollector::collect_in_foreground(bool clear_all_soft_refs, GCCause::Caus
         assert(_collectorState == Idling, "Collector state should "
           "have changed");
         break;
+
+      // 预清理  
       case Precleaning:
+
+      // 终止预清理
       case AbortablePreclean:
         // Elide the preclean phase
         _collectorState = FinalMarking;
@@ -3642,23 +3696,32 @@ class CMSParInitialMarkTask: public CMSParMarkTask {
 // this generation. [Note this initial checkpoint need only
 // be approximate -- we'll do a catch up phase subsequently.]
 void CMSCollector::checkpointRootsInitial(bool asynch) {
+  // 校验状态
   assert(_collectorState == InitialMarking, "Wrong collector state");
+  // 校验线程状态
   check_correct_thread_executing();
   TraceCMSMemoryManagerStats tms(_collectorState,GenCollectedHeap::heap()->gc_cause());
 
+  // 保存堆空间摘要信息
   save_heap_summary();
+  // GC前的堆空间信息报告
   report_heap_summary(GCWhen::BeforeGC);
 
   ReferenceProcessor* rp = ref_processor();
   SpecializationStats::clear();
   assert(_restart_addr == NULL, "Control point invariant");
+
+  // 异步
   if (asynch) {
     // acquire locks for subsequent manipulations
     MutexLockerEx x(bitMapLock(),
                     Mutex::_no_safepoint_check_flag);
     checkpointRootsInitialWork(asynch);
+
+    // 应许引用被发现
     // enable ("weak") refs discovery
     rp->enable_discovery(true /*verify_disabled*/, true /*check_no_refs*/);
+    // 状态改为并发标记
     _collectorState = Marking;
   } else {
     // (Weak) Refs discovery: this is controlled from genCollectedHeap::do_collection

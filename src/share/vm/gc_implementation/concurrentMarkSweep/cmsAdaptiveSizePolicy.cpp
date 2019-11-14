@@ -657,6 +657,7 @@ void CMSAdaptiveSizePolicy::msc_collection_end(GCCause::Cause gc_cause) {
   _STW_timer.start();
 }
 
+// 
 void CMSAdaptiveSizePolicy::ms_collection_begin() {
   if (PrintAdaptiveSizePolicy && Verbose) {
     gclog_or_tty->print(" ");
