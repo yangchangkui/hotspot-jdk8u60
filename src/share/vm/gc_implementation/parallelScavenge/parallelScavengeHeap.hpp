@@ -42,10 +42,13 @@ class GCTaskManager;
 class PSAdaptiveSizePolicy;
 class PSHeapSummary;
 
+//并发收集堆
 class ParallelScavengeHeap : public CollectedHeap {
   friend class VMStructs;
  private:
+  //年轻代
   static PSYoungGen* _young_gen;
+  //老年代
   static PSOldGen*   _old_gen;
 
   // Sizing policy for entire heap
@@ -79,7 +82,9 @@ class ParallelScavengeHeap : public CollectedHeap {
 
   // For use by VM operations
   enum CollectionType {
+    //清除
     Scavenge,
+    //标记清除
     MarkSweep
   };
 

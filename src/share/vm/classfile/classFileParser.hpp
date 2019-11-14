@@ -41,8 +41,10 @@ class FieldLayoutInfo;
 //
 // The bytes describing the class file structure is read from a Stream object
 
+// 字节码解析器
 class ClassFileParser VALUE_OBJ_CLASS_SPEC {
  private:
+  // 是否需要验证
   bool _need_verify;
   bool _relax_verify;
   u2   _major_version;

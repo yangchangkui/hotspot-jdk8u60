@@ -3699,6 +3699,7 @@ void ClassFileParser::layout_fields(Handle class_loader,
 }
 
 
+// 解析字节码文件
 instanceKlassHandle ClassFileParser::parseClassFile(Symbol* name,
                                                     ClassLoaderData* loader_data,
                                                     Handle protection_domain,
@@ -3713,10 +3714,13 @@ instanceKlassHandle ClassFileParser::parseClassFile(Symbol* name,
   // If RedefineClasses() was used before the retransformable
   // agent attached, then the cached class bytes may not be the
   // original class bytes.
+  // agent,JVMTI可能改变原来的字节码文件
   JvmtiCachedClassFileData *cached_class_file = NULL;
   Handle class_loader(THREAD, loader_data->class_loader());
   bool has_default_methods = false;
   bool declares_default_methods = false;
+
+  // 重置栈
   ResourceMark rm(THREAD);
 
   ClassFileStream* cfs = stream();
@@ -3724,6 +3728,7 @@ instanceKlassHandle ClassFileParser::parseClassFile(Symbol* name,
   assert(THREAD->is_Java_thread(), "must be a JavaThread");
   JavaThread* jt = (JavaThread*) THREAD;
 
+  // 
   PerfClassTraceTime ctimer(ClassLoader::perf_class_parse_time(),
                             ClassLoader::perf_class_parse_selftime(),
                             NULL,
@@ -3731,8 +3736,10 @@ instanceKlassHandle ClassFileParser::parseClassFile(Symbol* name,
                             jt->get_thread_stat()->perf_timers_addr(),
                             PerfClassTraceTime::PARSE_CLASS);
 
+  // 初始化加载器的属性
   init_parsed_class_attributes(loader_data);
 
+  // JVMTI使用，可以加载时修改字节码流
   if (JvmtiExport::should_post_class_file_load_hook()) {
     // Get the cached class file bytes (if any) from the class that
     // is being redefined or retransformed. We use jvmti_thread_state()
@@ -3787,17 +3794,20 @@ instanceKlassHandle ClassFileParser::parseClassFile(Symbol* name,
   // Save the class file name for easier error message printing.
   _class_name = (name != NULL) ? name : vmSymbols::unknown_class_name();
 
+  // 担保
   cfs->guarantee_more(8, CHECK_(nullHandle));  // magic, major, minor
   // Magic value
   u4 magic = cfs->get_u4_fast();
+  // 校验魔数：JAVA_CLASSFILE_MAGIC
   guarantee_property(magic == JAVA_CLASSFILE_MAGIC,
                      "Incompatible magic value %u in class file %s",
                      magic, CHECK_(nullHandle));
 
   // Version numbers
-  u2 minor_version = cfs->get_u2_fast();
-  u2 major_version = cfs->get_u2_fast();
+  u2 minor_version = cfs->get_u2_fast(); //次版本号
+  u2 major_version = cfs->get_u2_fast(); //主版本号
 
+  // 校验主版本号，次版本号
   if (DumpSharedSpaces && major_version < JAVA_1_5_VERSION) {
     ResourceMark rm;
     warning("Pre JDK 1.5 class not supported by CDS: %u.%u %s",
@@ -3847,6 +3857,7 @@ instanceKlassHandle ClassFileParser::parseClassFile(Symbol* name,
   _relax_verify = Verifier::relax_verify_for(class_loader());
 
   // Constant pool
+  // 常量池
   constantPoolHandle cp = parse_constant_pool(CHECK_(nullHandle));
 
   int cp_size = cp->length();
@@ -3889,6 +3900,7 @@ instanceKlassHandle ClassFileParser::parseClassFile(Symbol* name,
   // It has been checked when constant pool is parsed.
   // However, make sure it is not an array type.
   if (_need_verify) {
+    // 确认不是数组
     guarantee_property(class_name->byte_at(0) != JVM_SIGNATURE_ARRAY,
                        "Bad class name in class file %s",
                        CHECK_(nullHandle));

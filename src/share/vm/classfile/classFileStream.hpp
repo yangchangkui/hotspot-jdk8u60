@@ -48,6 +48,7 @@
 // The caller is responsible for deallocating the buffer and for using
 // ResourceMarks appropriately when constructing streams.
 
+// 字节码文件流
 class ClassFileStream: public ResourceObj {
  private:
   u1*   _buffer_start; // Buffer bottom

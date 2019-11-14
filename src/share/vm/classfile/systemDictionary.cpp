@@ -1061,6 +1061,7 @@ Klass* SystemDictionary::resolve_from_stream(Symbol* class_name,
     DoObjectLock = false;
   }
 
+  // 注册加载器数据
   ClassLoaderData* loader_data = register_loader(class_loader, CHECK_NULL);
 
   // Make sure we are synchronized on the class loader before we proceed
@@ -1068,6 +1069,7 @@ Klass* SystemDictionary::resolve_from_stream(Symbol* class_name,
   check_loader_lock_contention(lockObject, THREAD);
   ObjectLocker ol(lockObject, THREAD, DoObjectLock);
 
+  // 解析出的名字
   TempNewSymbol parsed_name = NULL;
 
   // Parse the stream. Note that we do this even though this klass might
@@ -1075,7 +1077,7 @@ Klass* SystemDictionary::resolve_from_stream(Symbol* class_name,
   // throw potential ClassFormatErrors.
   //
   // Note: "name" is updated.
-
+  // 使用class字节码文件解析器解析
   instanceKlassHandle k = ClassFileParser(st).parseClassFile(class_name,
                                                              loader_data,
                                                              protection_domain,

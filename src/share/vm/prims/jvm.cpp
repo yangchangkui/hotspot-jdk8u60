@@ -1001,6 +1001,7 @@ static jclass jvm_define_class_common(JNIEnv *env, const char *name,
                              PerfClassTraceTime::DEFINE_CLASS);
 
   if (UsePerfData) {
+    // 统计
     ClassLoader::perf_app_classfile_bytes_read()->inc(len);
   }
 
@@ -1014,27 +1015,39 @@ static jclass jvm_define_class_common(JNIEnv *env, const char *name,
       // into the constant pool.
       THROW_MSG_0(vmSymbols::java_lang_NoClassDefFoundError(), name);
     }
+    // 从符号引用表（hash算法）中获取类名称，有则返回已有，无则新增返回
     class_name = SymbolTable::new_symbol(name, str_len, CHECK_NULL);
   }
 
+  // 实例化栈资源
   ResourceMark rm(THREAD);
+  // 实例化字节码文件流
   ClassFileStream st((u1*) buf, len, (char *)source);
+  // 类加载者handle(句柄)
   Handle class_loader (THREAD, JNIHandles::resolve(loader));
   if (UsePerfData) {
+    // 统计
     is_lock_held_by_thread(class_loader,
                            ClassLoader::sync_JVMDefineClassLockFreeCounter(),
                            THREAD);
   }
+  // protected域
   Handle protection_domain (THREAD, JNIHandles::resolve(pd));
+  /**
+   * 核心方法，从字节码文件流中解析出Klass对象
+   */
   Klass* k = SystemDictionary::resolve_from_stream(class_name, class_loader,
                                                      protection_domain, &st,
                                                      verify != 0,
                                                      CHECK_NULL);
 
+  
   if (TraceClassResolution && k != NULL) {
+    // 跟踪常量池
     trace_class_resolution(k);
   }
 
+  // 句柄
   return (jclass) JNIHandles::make_local(env, k->java_mirror());
 }
 
@@ -1046,7 +1059,8 @@ JVM_ENTRY(jclass, JVM_DefineClass(JNIEnv *env, const char *name, jobject loader,
 JVM_END
 
 
-JVM_ENTRY(jclass, JVM_DefineClassWithSource(JNIEnv *env, const char *name, jobject loader, const jbyte *buf, jsize len, jobject pd, const char *source))
+JVM_ENTRY(jclass, JVM_DefineClassWithSource(JNIEnv *env, const char *name, jobject loader, 
+const jbyte *buf, jsize len, jobject pd, const char *source))
   JVMWrapper2("JVM_DefineClassWithSource %s", name);
 
   return jvm_define_class_common(env, name, loader, buf, len, pd, source, true, THREAD);

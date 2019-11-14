@@ -59,7 +59,7 @@
 #endif
 
 // Implementation of all inlined member functions defined in oop.hpp
-// We need a separate file to avoid circular references
+// We need a separate file to avoid circular references（避免循环引用）
 
 inline void oopDesc::release_set_mark(markOop m) {
   OrderAccess::release_store_ptr(&_mark, m);
@@ -148,12 +148,19 @@ inline void   oopDesc::init_mark()                 { set_mark(markOopDesc::proto
 
 inline bool oopDesc::is_a(Klass* k)        const { return klass()->is_subtype_of(k); }
 
+// 普通实例
 inline bool oopDesc::is_instance()            const { return klass()->oop_is_instance(); }
+// 类加载实例
 inline bool oopDesc::is_instanceClassLoader() const { return klass()->oop_is_instanceClassLoader(); }
+// 镜像实例
 inline bool oopDesc::is_instanceMirror()      const { return klass()->oop_is_instanceMirror(); }
+// 引用实例
 inline bool oopDesc::is_instanceRef()         const { return klass()->oop_is_instanceRef(); }
+// 数组
 inline bool oopDesc::is_array()               const { return klass()->oop_is_array(); }
+// 对象数组
 inline bool oopDesc::is_objArray()            const { return klass()->oop_is_objArray(); }
+// 类型数组
 inline bool oopDesc::is_typeArray()           const { return klass()->oop_is_typeArray(); }
 
 inline void*     oopDesc::field_base(int offset)        const { return (void*)&((char*)this)[offset]; }
