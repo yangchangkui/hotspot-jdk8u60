@@ -122,6 +122,7 @@ class Symbol : private SymbolBase {
 
   enum {
     // max_symbol_length is constrained by type of _length
+    // 符号最大长度65535：类，方法名称等 
     max_symbol_length = (1 << 16) -1
   };
 

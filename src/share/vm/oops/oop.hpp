@@ -59,34 +59,51 @@ class ParCompactionManager;
 class oopDesc {
   friend class VMStructs;
  private:
-  // 标记对象 markOopDesc
+  // 标记字段（markOopDesc：包含 hash码，分代年龄，是否偏向锁，
+  // 锁标识[01：无锁或者偏向锁、00：轻量级锁、10：重量级锁、11：GC标识]）
   volatile markOop  _mark;
+
+  // 元数据（-XX:+UseCompressedClassPointers 参数设置是否启用压缩指针）
   union _metadata {
+    // 类型指针，指向对象对应的Klass
     Klass*      _klass;
+    // 压缩类型指针
     narrowKlass _compressed_klass;
   } _metadata;
 
   // Fast access to barrier set.  Must be initialized.
+  // 屏障集合，默认为 NULL
   static BarrierSet* _bs;
 
  public:
+  // 获取标记字段
   markOop  mark() const         { return _mark; }
+  // 获取标记字段地址
   markOop* mark_addr() const    { return (markOop*) &_mark; }
 
+  // 设置标记字段
   void set_mark(volatile markOop m)      { _mark = m;   }
 
+  // 释放设置
   void    release_set_mark(markOop m);
+  //使用cas设置（cmpxchg汇编指令操作）
   markOop cas_set_mark(markOop new_mark, markOop old_mark);
 
   // Used only to re-initialize the mark word (e.g., of promoted
   // objects during a GC) -- requires a valid klass pointer
+  // 初始化
   void init_mark();
 
+  // 返回类型指针或者压缩指针
   Klass* klass() const;
+  // can be NULL in CMS
   Klass* klass_or_null() const volatile;
+  // 类型指针地址
   Klass** klass_addr();
+  // 压缩指针地址
   narrowKlass* compressed_klass_addr();
 
+  // 设置类型指针
   void set_klass(Klass* k);
 
   // For klass field compression
@@ -100,9 +117,14 @@ class oopDesc {
   static int header_size()          { return sizeof(oopDesc)/HeapWordSize; }
 
   // Returns whether this is an instance of k or an instance of a subclass of k
+  // instanceof实现,例子：
+  //        class A extends B{}
+  //        A a = new A(); 
+  //        a instanceof B 
   bool is_a(Klass* k)  const;
 
   // Returns the actual oop size of the object
+  // oop大小
   int size();
 
   // Sometimes (for complicated concurrency-related reasons), it is useful

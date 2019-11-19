@@ -40,6 +40,7 @@ class STWGCTimer;
 // DefNewGeneration is a young generation containing eden, from- and
 // to-space.
 
+// DefNewGeneration 就是新生代具体实现，包含：eden,from-space，to-space
 class DefNewGeneration: public Generation {
   friend class VMStructs;
 

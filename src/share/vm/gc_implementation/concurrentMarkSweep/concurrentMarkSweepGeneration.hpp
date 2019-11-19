@@ -589,7 +589,8 @@ class CMSCollector: public CHeapObj<mtGC> {
   bool unloaded_classes_last_cycle() const {
     return concurrent_cycles_since_last_unload() == 0;
   }
-  // Root scanning options for perm gen
+  // Root scanning options for perm gen 
+  // 扫描永久代
   int _roots_scanning_options;
   int roots_scanning_options() const      { return _roots_scanning_options; }
   void add_root_scanning_option(int o)    { _roots_scanning_options |= o;   }
