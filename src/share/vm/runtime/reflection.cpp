@@ -892,14 +892,16 @@ methodHandle Reflection::resolve_interface_call(instanceKlassHandle klass, metho
   CallInfo info;
   Symbol*  signature  = method->signature();
   Symbol*  name       = method->name();
+  // 链接
   LinkResolver::resolve_interface_call(info, receiver, recv_klass, klass,
                                        name, signature,
                                        KlassHandle(), false, true,
                                        CHECK_(methodHandle()));
+  // 获取方法                                     
   return info.selected_method();
 }
 
-
+// 反射调用具体逻辑
 oop Reflection::invoke(instanceKlassHandle klass, methodHandle reflected_method,
                        Handle receiver, bool override, objArrayHandle ptypes,
                        BasicType rtype, objArrayHandle args, bool is_method_invoke, TRAPS) {
@@ -908,23 +910,30 @@ oop Reflection::invoke(instanceKlassHandle klass, methodHandle reflected_method,
   methodHandle method;      // actual method to invoke
   KlassHandle target_klass; // target klass, receiver's klass for non-static
 
+  // 初始化类
   // Ensure klass is initialized
   klass->initialize(CHECK_NULL);
 
+  // 是否静态方法（直接看方法的访问标识）
   bool is_static = reflected_method->is_static();
+
+  // 若是静态方法  ignore receiver argument
   if (is_static) {
-    // ignore receiver argument
     method = reflected_method;
     target_klass = klass;
+
+    // 不是静态方法
   } else {
     // check for null receiver
     if (receiver.is_null()) {
+      // 不是静态方法，则如果入参调用者如果为空，则报空指针
       THROW_0(vmSymbols::java_lang_NullPointerException());
     }
     // Check class of receiver against class declaring method
     if (!receiver->is_a(klass())) {
       THROW_MSG_0(vmSymbols::java_lang_IllegalArgumentException(), "object is not an instance of declaring class");
     }
+
     // target klass is receiver's klass
     target_klass = KlassHandle(THREAD, receiver->klass());
     // no need to resolve if method is private or <init>
@@ -938,6 +947,7 @@ oop Reflection::invoke(instanceKlassHandle klass, methodHandle reflected_method,
           // new default: 6531596
           // Match resolution errors with those thrown due to reflection inlining
           // Linktime resolution & IllegalAccessCheck already done by Class.getMethod()
+          // 链接解析接口方法
           method = resolve_interface_call(klass, reflected_method, target_klass, receiver, THREAD);
           if (HAS_PENDING_EXCEPTION) {
           // Method resolution threw an exception; wrap it in an InvocationTargetException
@@ -998,6 +1008,7 @@ oop Reflection::invoke(instanceKlassHandle klass, methodHandle reflected_method,
   // I believe this is a ShouldNotGetHere case which requires
   // an internal vtable bug. If you ever get this please let Karen know.
   if (method.is_null()) {
+    // 方法为空，则释放资源，抛出 NoSuchMethodException
     ResourceMark rm(THREAD);
     THROW_MSG_0(vmSymbols::java_lang_NoSuchMethodError(),
                 Method::name_and_sig_as_C_string(klass(),
@@ -1031,6 +1042,7 @@ oop Reflection::invoke(instanceKlassHandle klass, methodHandle reflected_method,
   // Create object to contain parameters for the JavaCall
   JavaCallArguments java_args(method->size_of_parameters());
 
+  // 实例方法
   if (!is_static) {
     java_args.push_oop(receiver);
   }
@@ -1074,6 +1086,7 @@ oop Reflection::invoke(instanceKlassHandle klass, methodHandle reflected_method,
   // All oops (including receiver) is passed in as Handles. An potential oop is returned as an
   // oop (i.e., NOT as an handle)
   JavaValue result(rtype);
+  // 调用方法
   JavaCalls::call(&result, method, &java_args, THREAD);
 
   if (HAS_PENDING_EXCEPTION) {
@@ -1126,7 +1139,7 @@ BasicType Reflection::basic_type_mirror_to_basic_type(oop basic_type_mirror, TRA
 
 // This would be nicer if, say, java.lang.reflect.Method was a subclass
 // of java.lang.reflect.Constructor
-
+// 反射调用方法
 oop Reflection::invoke_method(oop method_mirror, Handle receiver, objArrayHandle args, TRAPS) {
   oop mirror             = java_lang_reflect_Method::clazz(method_mirror);
   int slot               = java_lang_reflect_Method::slot(method_mirror);
@@ -1148,6 +1161,7 @@ oop Reflection::invoke_method(oop method_mirror, Handle receiver, objArrayHandle
   }
   methodHandle method(THREAD, m);
 
+  // 调用方法
   return invoke(klass, method, receiver, override, ptypes, rtype, args, true, THREAD);
 }
 

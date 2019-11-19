@@ -776,6 +776,7 @@ class CompilerThread;
 
 typedef void (*ThreadFunction)(JavaThread*, TRAPS);
 
+// Java线程类
 class JavaThread: public Thread {
   friend class VMStructs;
  private:

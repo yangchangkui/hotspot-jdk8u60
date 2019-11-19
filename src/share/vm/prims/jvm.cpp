@@ -4150,16 +4150,22 @@ JVM_END
 
 
 // Method ///////////////////////////////////////////////////////////////////////////////////////////
-
+// Java虚拟机方法调用
 JVM_ENTRY(jobject, JVM_InvokeMethod(JNIEnv *env, jobject method, jobject obj, jobjectArray args0))
   JVMWrapper("JVM_InvokeMethod");
   Handle method_handle;
   if (thread->stack_available((address) &method_handle) >= JVMInvokeMethodSlack) {
+    // 方法句柄
     method_handle = Handle(THREAD, JNIHandles::resolve(method));
+    // 
     Handle receiver(THREAD, JNIHandles::resolve(obj));
+    // 参数
     objArrayHandle args(THREAD, objArrayOop(JNIHandles::resolve(args0)));
+    // 反射调用方法
     oop result = Reflection::invoke_method(method_handle(), receiver, args, CHECK_NULL);
+    // 组装结果
     jobject res = JNIHandles::make_local(env, result);
+    // JVMTI分析
     if (JvmtiExport::should_post_vm_object_alloc()) {
       oop ret_type = java_lang_reflect_Method::return_type(method_handle());
       assert(ret_type != NULL, "sanity check: ret_type oop must not be NULL!");
@@ -4171,6 +4177,7 @@ JVM_ENTRY(jobject, JVM_InvokeMethod(JNIEnv *env, jobject method, jobject obj, jo
     }
     return res;
   } else {
+    // 栈空间不够，抛出 StackOverflowError 异常
     THROW_0(vmSymbols::java_lang_StackOverflowError());
   }
 JVM_END

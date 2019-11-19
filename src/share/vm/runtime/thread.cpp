@@ -457,6 +457,7 @@ void Thread::set_priority(Thread* thread, ThreadPriority priority) {
 }
 
 
+// 启动线程
 void Thread::start(Thread* thread) {
   trace("start", thread);
   // Start is different from resume in that its safety is guaranteed by context or
