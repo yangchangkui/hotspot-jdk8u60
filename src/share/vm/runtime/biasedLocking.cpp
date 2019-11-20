@@ -533,7 +533,9 @@ BiasedLocking::Condition BiasedLocking::revoke_and_rebias(Handle obj, bool attem
   // efficiently enough that we should not cause these revocations to
   // update the heuristics because doing so may cause unwanted bulk
   // revocations (which are expensive) to occur.
+  // 1、通过markOop mark = obj->mark()获取对象的markOop数据mark，即对象头的Mark Word；
   markOop mark = obj->mark();
+  // 2、判断mark是否为可偏向状态，即mark的偏向锁标志位为 1，锁标志位为 01；
   if (mark->is_biased_anonymously() && !attempt_rebias) {
     // We are probably trying to revoke the bias of this object due to
     // an identity hash code computation. Try to revoke the bias
@@ -543,6 +545,7 @@ BiasedLocking::Condition BiasedLocking::revoke_and_rebias(Handle obj, bool attem
     // the bias of the object.
     markOop biased_value       = mark;
     markOop unbiased_prototype = markOopDesc::prototype()->set_age(mark->age());
+    // 通过cas汇编指令cmpxchg切换地址
     markOop res_mark = (markOop) Atomic::cmpxchg_ptr(unbiased_prototype, obj->mark_addr(), mark);
     if (res_mark == biased_value) {
       return BIAS_REVOKED;
@@ -648,8 +651,10 @@ void BiasedLocking::revoke_at_safepoint(Handle h_obj) {
     revoke_bias(obj, false, false, NULL);
   } else if ((heuristics == HR_BULK_REBIAS) ||
              (heuristics == HR_BULK_REVOKE)) {
+    // 批量撤销
     bulk_revoke_or_rebias_at_safepoint(obj, (heuristics == HR_BULK_REBIAS), false, NULL);
   }
+  // 清除缓存监视信息
   clean_up_cached_monitor_info();
 }
 
