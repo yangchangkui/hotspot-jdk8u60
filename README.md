@@ -16,19 +16,19 @@ Simple Build Instructions:
 
 ``` lua
 src
-├── cpu
+├── cpu [CPU相关]
 |    ├── ppc
 |    ├── sparc
 |    ├── x86
 |    ├── zero
-├── os
+├── os [操作系统相关]
 |    ├── aix
 |    ├── bsd
 |    ├── linux
 |    ├── posix
 |    ├── solaris
 |    ├── windows
-├── os_cpu
+├── os_cpu [系统CPU相关]
 |    ├── aix_ppc
 |    ├── bsd_x86
 |    ├── bsd_zero
@@ -41,7 +41,7 @@ src
 |    ├── windows_x86
 ├── share
 |    ├── tools [工具]
-|    ├── vm
+|    ├── vm [虚拟机]
 |         ├── adlc [平台描述文件]
 |         ├── asm [汇编器]
 |         ├── c1 [client编译器，也叫c1编译器]
