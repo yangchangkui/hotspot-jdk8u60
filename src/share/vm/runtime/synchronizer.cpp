@@ -618,7 +618,8 @@ static inline intptr_t get_next_hash(Thread * Self, oop obj) {
   TEVENT (hashCode: GENERATE) ;
   return value;
 }
-//
+
+//获取hashCode
 intptr_t ObjectSynchronizer::FastHashCode (Thread * Self, oop obj) {
   if (UseBiasedLocking) {
     // NOTE: many places throughout the JVM do not expect a safepoint

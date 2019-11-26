@@ -538,7 +538,7 @@ JVM_END
 
 // java.lang.Object ///////////////////////////////////////////////
 
-
+// 生成hashCode public native int hashCode();
 JVM_ENTRY(jint, JVM_IHashCode(JNIEnv* env, jobject handle))
   JVMWrapper("JVM_IHashCode");
   // as implemented in the classic virtual machine; return 0 if object is NULL
