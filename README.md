@@ -1,6 +1,6 @@
 ### [openjdk](http://openjdk.java.net/)
 
-  openjdk是jdk的开源实现
+  openjdk是Oracle开源的JDK实现
   
 ### 源码目录介绍
 
@@ -60,5 +60,9 @@ src
 |         ├── utilities [内部工具类和公共函数]
 
 ```
+
+### JVM源码解析系列文章
+1. [JVM源码解析之类加载过程详解](./sourceCodeParse/JVM源码解析之类加载过程详解.md)
+2. [JVM源码解析之方法执行过程详解](./sourceCodeParse/JVM源码解析之方法执行过程详解.md)
 
 
