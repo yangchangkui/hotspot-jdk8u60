@@ -54,6 +54,7 @@ void ScavengeRootsTask::do_it(GCTaskManager* manager, uint which) {
   PSPromoteRootsClosure  roots_to_old_closure(pm);
 
   switch (_root_type) {
+    //
     case universe:
       Universe::oops_do(&roots_closure);
       break;

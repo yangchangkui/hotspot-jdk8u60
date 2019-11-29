@@ -52,16 +52,27 @@ class VMThread;
 
 class ScavengeRootsTask : public GCTask {
  public:
+  //  GC Root类型
   enum RootType {
+    // universe相关引用
     universe              = 1,
+    // 本地方法创建的全局引用
     jni_handles           = 2,
+    // 方法栈中的引用(Java方法栈中的引用、本地方法栈中的引用)
     threads               = 3,
+    // 对象同步监视器中的引用
     object_synchronizer   = 4,
+    // 分析相关引用
     flat_profiler         = 5,
+    // 系统字典(SystemDictionary)中的引用
     system_dictionary     = 6,
+    // 类加载器相关引用
     class_loader_data     = 7,
+    // Java级管理接口(Management)中的引用
     management            = 8,
+    // 虚拟机工具接口(JVMTI)中的引用
     jvmti                 = 9,
+    //代码高速缓存区中的引用
     code_cache            = 10
   };
  private:
