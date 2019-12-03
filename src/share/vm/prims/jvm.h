@@ -101,6 +101,7 @@ JVM_GetInterfaceVersion(void);
 /*
  * java.lang.Object
  */
+// Object里的hashCode
 JNIEXPORT jint JNICALL
 JVM_IHashCode(JNIEnv *env, jobject obj);
 
