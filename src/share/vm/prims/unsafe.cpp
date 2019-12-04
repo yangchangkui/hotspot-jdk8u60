@@ -1251,6 +1251,7 @@ UNSAFE_ENTRY(jboolean, Unsafe_CompareAndSwapLong(JNIEnv *env, jobject unsafe, jo
 #endif
 UNSAFE_END
 
+// sun.misc.Unsafe#park方法源码
 UNSAFE_ENTRY(void, Unsafe_Park(JNIEnv *env, jobject unsafe, jboolean isAbsolute, jlong time))
   UnsafeWrapper("Unsafe_Park");
   EventThreadPark event;

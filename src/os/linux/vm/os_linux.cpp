@@ -3776,6 +3776,7 @@ int os::sleep(Thread* thread, jlong millis, bool interruptible) {
         // not a guarantee() because JVM should not abort on kernel/glibc bugs
         assert(!Linux::supports_monotonic_clock(), "time moving backwards");
       } else {
+        // 1000000
         millis -= (newtime - prevtime) / NANOSECS_PER_MILLISEC;
       }
 
@@ -5608,6 +5609,7 @@ void os::PlatformEvent::park() {       // AKA "down()"
   guarantee (_Event >= 0, "invariant") ;
 }
 
+// park
 int os::PlatformEvent::park(jlong millis) {
   guarantee (_nParked == 0, "invariant") ;
 
@@ -5805,6 +5807,7 @@ static void unpackTime(timespec* absTime, bool isAbsolute, jlong time) {
   assert(absTime->tv_nsec < NANOSECS_PER_SEC, "tv_nsec >= nanos_per_sec");
 }
 
+// park方法源码
 void Parker::park(bool isAbsolute, jlong time) {
   // Ideally we'd do something useful while spinning, such
   // as calling unpackTime().

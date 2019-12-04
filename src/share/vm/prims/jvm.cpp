@@ -3170,13 +3170,16 @@ JVM_ENTRY(void, JVM_Yield(JNIEnv *env, jclass threadClass))
 JVM_END
 
 
+// java.lang.Thread#sleep(long)源码实现
 JVM_ENTRY(void, JVM_Sleep(JNIEnv* env, jclass threadClass, jlong millis))
   JVMWrapper("JVM_Sleep");
 
+  // 负数，则直接抛出非法参数异常
   if (millis < 0) {
     THROW_MSG(vmSymbols::java_lang_IllegalArgumentException(), "timeout value is negative");
   }
 
+  // 线程已中止，则抛出已中止异常
   if (Thread::is_interrupted (THREAD, true) && !HAS_PENDING_EXCEPTION) {
     THROW_MSG(vmSymbols::java_lang_InterruptedException(), "sleep interrupted");
   }
@@ -3194,12 +3197,15 @@ JVM_ENTRY(void, JVM_Sleep(JNIEnv* env, jclass threadClass, jlong millis))
 
   EventThreadSleep event;
 
+  // 时间为0
   if (millis == 0) {
     // When ConvertSleepToYield is on, this matches the classic VM implementation of
     // JVM_Sleep. Critical for similar threading behaviour (Win32)
     // It appears that in certain GUI contexts, it may be beneficial to do a short sleep
     // for SOLARIS
+    // 开启sleep转yield
     if (ConvertSleepToYield) {
+      // 调用yield
       os::yield();
     } else {
       ThreadState old_state = thread->osthread()->get_state();
@@ -3207,6 +3213,8 @@ JVM_ENTRY(void, JVM_Sleep(JNIEnv* env, jclass threadClass, jlong millis))
       os::sleep(thread, MinSleepInterval, false);
       thread->osthread()->set_state(old_state);
     }
+
+    // 时间大于 0
   } else {
     ThreadState old_state = thread->osthread()->get_state();
     thread->osthread()->set_state(SLEEPING);
