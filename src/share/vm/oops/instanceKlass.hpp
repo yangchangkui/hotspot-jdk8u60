@@ -183,10 +183,13 @@ class InstanceKlass: public Klass {
 
  protected:
   // Annotations for this class
+  // 类注解
   Annotations*    _annotations;
   // Array classes holding elements of this class.
+  // 数组类元数据
   Klass*          _array_klasses;
   // Constant pool for this class.
+  // 常量池
   ConstantPool* _constants;
   // The InnerClasses attribute and EnclosingMethod attribute. The
   // _inner_classes is an array of shorts. If the class has InnerClasses
