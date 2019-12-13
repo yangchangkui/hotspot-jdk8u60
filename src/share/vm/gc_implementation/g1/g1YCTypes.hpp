@@ -27,11 +27,17 @@
 
 #include "utilities/debug.hpp"
 
+// G1 Young GC 类型
 enum G1YCType {
+  // 正常
   Normal,
+  // 初始标记
   InitialMark,
+  // 
   DuringMark,
+  // Mixed
   Mixed,
+  // 
   G1YCTypeEndSentinel
 };
 

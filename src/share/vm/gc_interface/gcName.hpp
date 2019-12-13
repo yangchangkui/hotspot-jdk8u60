@@ -27,6 +27,7 @@
 
 #include "utilities/debug.hpp"
 
+// GC名称
 enum GCName {
   ParallelOld,
   SerialOld,

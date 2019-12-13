@@ -179,7 +179,6 @@ class JavaCallArguments : public StackObj {
 // All calls to Java have to go via JavaCalls. Sets up the stack frame
 // and makes sure that the last_Java_frame pointers are chained correctly.
 //
-
 class JavaCalls: AllStatic {
   static void call_helper(JavaValue* result, methodHandle* method, JavaCallArguments* args, TRAPS);
  public:
