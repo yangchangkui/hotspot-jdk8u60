@@ -739,6 +739,7 @@ G1CollectedHeap::humongous_obj_allocate_initialize_regions(uint first,
 // If could fit into free regions w/o expansion, try.
 // Otherwise, if can expand, do so.
 // Otherwise, if using ex regions might help, try with ex given back.
+// 大对象分配
 HeapWord* G1CollectedHeap::humongous_obj_allocate(size_t word_size, AllocationContext_t context) {
   assert_heap_locked_or_at_safepoint(true /* should_be_vm_thread */);
 
@@ -1132,6 +1133,7 @@ HeapWord* G1CollectedHeap::attempt_allocation_at_safepoint(size_t word_size,
                                              !expect_null_mutator_alloc_region,
          "the current alloc region was unexpectedly found to be non-NULL");
 
+  // 判断是否大对象
   if (!isHumongous(word_size)) {
     return _allocator->mutator_alloc_region(context)->attempt_allocation_locked(word_size,
                                                       false /* bot_updates */);

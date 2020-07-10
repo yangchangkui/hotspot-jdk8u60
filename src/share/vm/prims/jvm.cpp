@@ -1010,6 +1010,7 @@ static jclass jvm_define_class_common(JNIEnv *env, const char *name,
   TempNewSymbol class_name = NULL;
   if (name != NULL) {
     const int str_len = (int)strlen(name);
+    // 类名长度最大限制为：65535，否则常量池不支持
     if (str_len > Symbol::max_length()) {
       // It's impossible to create this class;  the name cannot fit
       // into the constant pool.
@@ -1034,7 +1035,7 @@ static jclass jvm_define_class_common(JNIEnv *env, const char *name,
   // protected域
   Handle protection_domain (THREAD, JNIHandles::resolve(pd));
   /**
-   * 核心方法，从字节码文件流中解析出Klass对象
+   * 核心方法：从字节码文件流中解析出Klass对象
    */
   Klass* k = SystemDictionary::resolve_from_stream(class_name, class_loader,
                                                      protection_domain, &st,

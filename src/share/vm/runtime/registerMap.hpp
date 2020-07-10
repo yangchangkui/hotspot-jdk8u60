@@ -74,6 +74,7 @@ class JavaThread;
 //      Updating of the RegisterMap can be turned off by instantiating the
 //      register map as: RegisterMap map(thread, false);
 
+// 寄存器Map
 class RegisterMap : public StackObj {
  public:
     typedef julong LocationValidType;

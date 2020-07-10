@@ -3946,6 +3946,7 @@ instanceKlassHandle ClassFileParser::parseClassFile(Symbol* name,
     instanceKlassHandle super_klass = parse_super_class(super_class_index,
                                                         CHECK_NULL);
 
+    // 接口
     // Interfaces
     u2 itfs_len = cfs->get_u2_fast();
     Array<Klass*>* local_interfaces =
@@ -3953,12 +3954,15 @@ instanceKlassHandle ClassFileParser::parseClassFile(Symbol* name,
                        &has_default_methods, CHECK_(nullHandle));
 
     u2 java_fields_count = 0;
+
+    // 属性
     // Fields (offsets are filled in later)
     FieldAllocationCount fac;
     Array<u2>* fields = parse_fields(class_name,
                                      access_flags.is_interface(),
                                      &fac, &java_fields_count,
                                      CHECK_(nullHandle));
+    // 方法
     // Methods
     bool has_final_method = false;
     AccessFlags promoted_flags;

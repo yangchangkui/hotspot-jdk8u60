@@ -93,10 +93,12 @@ public:
 class G1DefaultAllocator : public G1Allocator {
 protected:
   // Alloc region used to satisfy mutator allocation requests.
+  // 用于满足赋值函数分配请求的分配区域
   MutatorAllocRegion _mutator_alloc_region;
 
   // Alloc region used to satisfy allocation requests by the GC for
   // survivor objects.
+  // survivor 对象 region
   SurvivorGCAllocRegion _survivor_gc_alloc_region;
 
   // Alloc region used to satisfy allocation requests by the GC for

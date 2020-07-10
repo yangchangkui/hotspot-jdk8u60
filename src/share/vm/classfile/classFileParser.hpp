@@ -218,6 +218,7 @@ class ClassFileParser VALUE_OBJ_CLASS_SPEC {
   constantPoolHandle parse_constant_pool(TRAPS);
 
   // Interface parsing
+  // j
   Array<Klass*>* parse_interfaces(int length,
                                   Handle protection_domain,
                                   Symbol* class_name,

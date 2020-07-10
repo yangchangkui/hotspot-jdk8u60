@@ -22,6 +22,10 @@
  *
  */
 
+/**
+ * 类加载过程
+ */ 
+
 #ifndef SHARE_VM_CLASSFILE_CLASSLOADER_HPP
 #define SHARE_VM_CLASSFILE_CLASSLOADER_HPP
 

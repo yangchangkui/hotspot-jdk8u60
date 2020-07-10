@@ -1046,7 +1046,7 @@ Klass* SystemDictionary::parse_stream(Symbol* class_name,
 // JVM_DefineClass).
 // Note: class_name can be NULL. In that case we do not know the name of
 // the class until we have parsed the stream.
-
+// 处理Stream流数据
 Klass* SystemDictionary::resolve_from_stream(Symbol* class_name,
                                              Handle class_loader,
                                              Handle protection_domain,
@@ -1056,6 +1056,7 @@ Klass* SystemDictionary::resolve_from_stream(Symbol* class_name,
 
   // Classloaders that support parallelism, e.g. bootstrap classloader,
   // or all classloaders with UnsyncloadClass do not acquire lock here
+  // 判断类加载器是否支持并行执行
   bool DoObjectLock = true;
   if (is_parallelCapable(class_loader)) {
     DoObjectLock = false;
