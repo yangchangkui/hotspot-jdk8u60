@@ -2670,6 +2670,7 @@ bool valid_hprof_or_jdwp_agent(char *name, bool is_path) {
   return false;
 }
 
+// JVM启动参数处理
 jint Arguments::parse_each_vm_init_arg(const JavaVMInitArgs* args,
                                        SysClassPath* scp_p,
                                        bool* scp_assembly_required_p,

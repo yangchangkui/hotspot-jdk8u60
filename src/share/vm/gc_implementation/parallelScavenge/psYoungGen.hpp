@@ -43,8 +43,11 @@ class PSYoungGen : public CHeapObj<mtGC> {
   PSVirtualSpace* _virtual_space;
 
   // Spaces
+  // eden 区域
   MutableSpace* _eden_space;
+  // form 区域
   MutableSpace* _from_space;
+  // to 区域
   MutableSpace* _to_space;
 
 

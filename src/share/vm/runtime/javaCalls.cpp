@@ -307,6 +307,7 @@ void JavaCalls::call(JavaValue* result, methodHandle method, JavaCallArguments* 
   os::os_exception_wrapper(call_helper, result, &method, args, THREAD);
 }
 
+// JavaCalls::call实际调用
 void JavaCalls::call_helper(JavaValue* result, methodHandle* m, JavaCallArguments* args, TRAPS) {
   // During dumping, Java execution environment is not fully initialized. Also, Java execution
   // may cause undesirable side-effects in the class metadata.
@@ -347,6 +348,7 @@ void JavaCalls::call_helper(JavaValue* result, methodHandle* m, JavaCallArgument
 
 
   assert(!thread->is_Compiler_thread(), "cannot compile from the compiler");
+  // 编译方法
   if (CompilationPolicy::must_be_compiled(method)) {
     CompileBroker::compile_method(method, InvocationEntryBci,
                                   CompilationPolicy::policy()->initial_compile_level(),

@@ -841,7 +841,7 @@ JVM_END
 // Thus a public/stable exported entry point is the right solution,
 // public here means public in linker semantics, and is exported only
 // to the JDK, and is not intended to be a public API.
-
+// 分析反射获取Class过程 Class.forName("java.lang.String")
 JVM_ENTRY(jclass, JVM_FindClassFromBootLoader(JNIEnv* env,
                                               const char* name))
   JVMWrapper2("JVM_FindClassFromBootLoader %s", name);
@@ -853,7 +853,9 @@ JVM_ENTRY(jclass, JVM_FindClassFromBootLoader(JNIEnv* env,
     return NULL;
   }
 
+  // 
   TempNewSymbol h_name = SymbolTable::new_symbol(name, CHECK_NULL);
+  // 
   Klass* k = SystemDictionary::resolve_or_null(h_name, CHECK_NULL);
   if (k == NULL) {
     return NULL;
